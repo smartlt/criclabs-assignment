@@ -26,9 +26,22 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        window.location.href = "/login";
+        // Don't redirect if we're already on auth pages or if this is an auth endpoint
+        const currentPath = window.location.pathname;
+        const isAuthPage =
+          currentPath === "/login" || currentPath === "/register";
+        const isAuthEndpoint = error.config?.url?.includes("/auth/");
+
+        // Only redirect if we're not on an auth page and this isn't an auth endpoint
+        if (!isAuthPage && !isAuthEndpoint) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+
+          // Delay the redirect slightly to avoid race conditions
+          setTimeout(() => {
+            window.location.href = "/login";
+          }, 100);
+        }
       }
     }
     return Promise.reject(error);
