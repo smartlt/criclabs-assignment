@@ -8,14 +8,8 @@ import { FilterQuery, Model } from 'mongoose';
 import { DataRecord, DataRecordDocument } from '../schemas/data-record.schema';
 import { CreateDataRecordDto } from './dto/create-data-record.dto';
 import { UpdateDataRecordDto } from './dto/update-data-record.dto';
+import { QueryDataRecordDto } from './dto/query-data-record.dto';
 import { UserDocument } from 'src/schemas/user.schema';
-
-interface FilterOptions {
-  title?: string;
-  department?: string;
-  dataSubjectType?: string;
-  description?: string;
-}
 
 @Injectable()
 export class DataRecordsService {
@@ -32,30 +26,62 @@ export class DataRecordsService {
     return dataRecord.save();
   }
 
-  async findAll(filters: FilterOptions = {}) {
+  async findAll(queryParams: QueryDataRecordDto) {
+    const {
+      title,
+      departments,
+      dataSubjectTypes,
+      sortField = 'createdAt',
+      sortDirection = 'desc',
+      page = 1,
+      limit = 50,
+    } = queryParams;
+
     const query: FilterQuery<DataRecord> = {};
 
     // Apply filters
-    if (filters.title) {
-      query.title = { $regex: filters.title, $options: 'i' };
+    if (title) {
+      query.title = { $regex: title, $options: 'i' };
     }
 
-    if (filters.department) {
-      query.department = filters.department;
+    if (departments && departments.length > 0) {
+      query.department = { $in: departments };
     }
 
-    if (filters.dataSubjectType) {
-      query.dataSubjectTypes = { $in: [filters.dataSubjectType] };
+    if (dataSubjectTypes && dataSubjectTypes.length > 0) {
+      query.dataSubjectTypes = { $in: dataSubjectTypes };
     }
 
-    if (filters.description) {
-      query.description = { $regex: filters.description, $options: 'i' };
-    }
+    // Calculate pagination
+    const skip = (page - 1) * limit;
 
-    return this.dataRecordModel
-      .find(query)
-      .populate('createdBy', 'name email')
-      .exec();
+    // Build sort object
+    const sortObj: Record<string, 1 | -1> = {};
+    sortObj[sortField] = sortDirection === 'asc' ? 1 : -1;
+
+    // Execute query with pagination and sorting
+    const [data, total] = await Promise.all([
+      this.dataRecordModel
+        .find(query)
+        .sort(sortObj)
+        .skip(skip)
+        .limit(limit)
+        .populate('createdBy', 'name email')
+        .exec(),
+      this.dataRecordModel.countDocuments(query).exec(),
+    ]);
+
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: page < Math.ceil(total / limit),
+        hasPrevPage: page > 1,
+      },
+    };
   }
 
   async findOne(id: string) {
@@ -90,16 +116,10 @@ export class DataRecordsService {
     });
   }
 
-  async remove(id: string, user: UserDocument) {
-    const userId = user._id;
+  async remove(id: string) {
     const dataRecord = await this.dataRecordModel.findById(id);
     if (!dataRecord) {
       throw new NotFoundException('Data record not found');
-    }
-
-    // Check if user owns the record
-    if (dataRecord.createdBy.toString() !== userId) {
-      throw new ForbiddenException('You can only delete your own records');
     }
 
     return this.dataRecordModel.findByIdAndDelete(id);

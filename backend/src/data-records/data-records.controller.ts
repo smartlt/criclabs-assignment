@@ -14,6 +14,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { DataRecordsService } from './data-records.service';
 import { CreateDataRecordDto } from './dto/create-data-record.dto';
 import { UpdateDataRecordDto } from './dto/update-data-record.dto';
+import { QueryDataRecordDto } from './dto/query-data-record.dto';
 import { UserDocument } from 'src/schemas/user.schema';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
@@ -32,7 +33,7 @@ export class DataRecordsController {
   }
 
   @Get()
-  findAll(@Query() query: any) {
+  findAll(@Query() query: QueryDataRecordDto) {
     return this.dataRecordsService.findAll(query);
   }
 
@@ -51,10 +52,7 @@ export class DataRecordsController {
   }
 
   @Delete(':id')
-  remove(
-    @Param('id') id: string,
-    @Request() req: Request & { user: UserDocument },
-  ) {
-    return this.dataRecordsService.remove(id, req.user);
+  remove(@Param('id') id: string) {
+    return this.dataRecordsService.remove(id);
   }
 }

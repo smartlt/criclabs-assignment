@@ -194,7 +194,7 @@ export default function DataMappingPage() {
               <div className="flex items-center space-x-3 mb-4">
                 <button
                   type="button"
-                  className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm rounded-md text-black bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  className="inline-flex items-center px-3 py-2 border border-green-600 shadow-sm rounded-md text-green-600 bg-white hover:bg-gray-50"
                 >
                   <svg
                     className="mr-2 -ml-1 h-5 w-5"
@@ -208,7 +208,7 @@ export default function DataMappingPage() {
                 </button>
                 <button
                   type="button"
-                  className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm rounded-md text-black bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm rounded-md text-black bg-white hover:bg-gray-50"
                 >
                   <svg
                     className="mr-2 -ml-1 h-5 w-5"

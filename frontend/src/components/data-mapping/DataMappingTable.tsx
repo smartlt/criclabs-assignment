@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
   useDataMapping,
   Department,
@@ -15,7 +15,12 @@ interface DataMapping {
   updatedAt: string;
 }
 
-type SortField = "title" | "description" | "department" | "dataSubjectTypes";
+type SortField =
+  | "title"
+  | "description"
+  | "department"
+  | "dataSubjectTypes"
+  | "createdAt";
 type SortDirection = "asc" | "desc";
 
 interface FilterState {
@@ -29,9 +34,30 @@ interface DataMappingTableProps {
 }
 
 export default function DataMappingTable({ filters }: DataMappingTableProps) {
-  const { data, isLoading, error, deleteDataMapping } = useDataMapping();
-  const [sortField, setSortField] = useState<SortField>("title");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const {
+    data,
+    pagination,
+    isLoading,
+    error,
+    fetchDataMappings,
+    deleteDataMapping,
+  } = useDataMapping();
+  const [sortField, setSortField] = useState<SortField>("createdAt");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+
+  // Fetch data when filters or sorting changes
+  useEffect(() => {
+    const queryParams = {
+      title: filters?.title,
+      departments: filters?.departments,
+      dataSubjectTypes: filters?.dataSubjectTypes,
+      sortField,
+      sortDirection,
+      limit: 50, // You can make this configurable
+    };
+
+    fetchDataMappings(queryParams);
+  }, [filters, sortField, sortDirection]); // Removed fetchDataMappings from deps to avoid infinite loop
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -41,76 +67,6 @@ export default function DataMappingTable({ filters }: DataMappingTableProps) {
       setSortDirection("asc");
     }
   };
-
-  const sortedData = useMemo(() => {
-    if (!data) return [];
-
-    // Apply filters first
-    let filteredData = [...data];
-
-    if (filters) {
-      filteredData = filteredData.filter((item) => {
-        // Title filter (partial match, case-insensitive)
-        if (
-          filters.title &&
-          !item.title.toLowerCase().includes(filters.title.toLowerCase())
-        ) {
-          return false;
-        }
-
-        // Department filter
-        if (
-          filters.departments.length > 0 &&
-          !filters.departments.includes(item.department)
-        ) {
-          return false;
-        }
-
-        // Data Subject Type filter
-        if (filters.dataSubjectTypes.length > 0) {
-          const hasMatchingType = filters.dataSubjectTypes.some((filterType) =>
-            item.dataSubjectTypes.includes(filterType)
-          );
-          if (!hasMatchingType) {
-            return false;
-          }
-        }
-
-        return true;
-      });
-    }
-
-    // Then apply sorting
-    return filteredData.sort((a, b) => {
-      let aValue: string;
-      let bValue: string;
-
-      switch (sortField) {
-        case "title":
-          aValue = a.title.toLowerCase();
-          bValue = b.title.toLowerCase();
-          break;
-        case "description":
-          aValue = a.description.toLowerCase();
-          bValue = b.description.toLowerCase();
-          break;
-        case "department":
-          aValue = a.department.toLowerCase();
-          bValue = b.department.toLowerCase();
-          break;
-        case "dataSubjectTypes":
-          aValue = a.dataSubjectTypes.join(", ").toLowerCase();
-          bValue = b.dataSubjectTypes.join(", ").toLowerCase();
-          break;
-        default:
-          return 0;
-      }
-
-      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-      return 0;
-    });
-  }, [data, sortField, sortDirection, filters]);
 
   const SortableHeader = ({
     field,
@@ -165,8 +121,11 @@ export default function DataMappingTable({ filters }: DataMappingTableProps) {
     if (window.confirm("Are you sure you want to delete this data mapping?")) {
       try {
         await deleteDataMapping(id);
+        // Success feedback could be added here if needed
       } catch (error) {
         console.error("Failed to delete data mapping:", error);
+        // Show user-friendly error message
+        alert("Failed to delete data mapping. Please try again.");
       }
     }
   };
@@ -188,7 +147,17 @@ export default function DataMappingTable({ filters }: DataMappingTableProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow h-96 flex flex-col">
+    <div className="bg-white rounded-lg shadow h-130 flex flex-col">
+      {/* Pagination info */}
+      {pagination && (
+        <div className="px-6 py-3 border-b border-gray-200 bg-gray-50">
+          <p className="text-sm text-gray-700">
+            Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
+            {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
+            {pagination.total} results
+          </p>
+        </div>
+      )}
       <div className="flex-1 overflow-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -205,8 +174,8 @@ export default function DataMappingTable({ filters }: DataMappingTableProps) {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {sortedData && sortedData.length > 0 ? (
-              sortedData.map((item: DataMapping) => (
+            {data && data.length > 0 ? (
+              data.map((item: DataMapping) => (
                 <tr key={item._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {item.title}
