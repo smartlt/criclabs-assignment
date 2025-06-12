@@ -29,11 +29,11 @@ interface UseDataMappingReturn {
   isLoading: boolean;
   error: Error | null;
   createDataMapping: (
-    data: Omit<DataMapping, "id" | "createdAt" | "updatedAt">
+    data: Omit<DataMapping, "_id" | "createdAt" | "updatedAt">
   ) => Promise<void>;
   updateDataMapping: (
     id: string,
-    data: Partial<Omit<DataMapping, "id" | "createdAt" | "updatedAt">>
+    data: Partial<Omit<DataMapping, "_id" | "createdAt" | "updatedAt">>
   ) => Promise<void>;
   deleteDataMapping: (id: string) => Promise<void>;
 }
@@ -58,7 +58,7 @@ export function useDataMapping(): UseDataMappingReturn {
   };
 
   const createDataMapping = async (
-    newData: Omit<DataMapping, "id" | "createdAt" | "updatedAt">
+    newData: Omit<DataMapping, "_id" | "createdAt" | "updatedAt">
   ) => {
     try {
       const response = await api.post("/data-records", newData);
@@ -76,7 +76,7 @@ export function useDataMapping(): UseDataMappingReturn {
 
   const updateDataMapping = async (
     id: string,
-    updateData: Partial<Omit<DataMapping, "id" | "createdAt" | "updatedAt">>
+    updateData: Partial<Omit<DataMapping, "_id" | "createdAt" | "updatedAt">>
   ) => {
     try {
       const response = await api.patch(`/data-records/${id}`, updateData);

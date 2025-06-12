@@ -5,9 +5,14 @@ import Sidebar from "@/components/layout/Sidebar";
 import HorizontalNav from "@/components/layout/HorizontalNav";
 import TopBar from "@/components/layout/TopBar";
 import DataMappingTable from "@/components/data-mapping/DataMappingTable";
+import CreateDataForm from "@/components/data-mapping/CreateDataForm";
+import CreateDataFormMobile from "@/components/data-mapping/CreateDataFormMobile";
+import { useScreenSize } from "@/hooks/useScreenSize";
 
 export default function DataMappingPage() {
   const [activeTab, setActiveTab] = useState("data-mapping");
+  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+  const { isMobile } = useScreenSize();
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -87,6 +92,7 @@ export default function DataMappingPage() {
                   </button>
                   <button
                     type="button"
+                    onClick={() => setIsCreateFormOpen(true)}
                     className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm rounded-md text-center justify-center text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 w-full"
                   >
                     <svg
@@ -216,6 +222,19 @@ export default function DataMappingPage() {
           </div>
         </main>
       </div>
+
+      {/* Create Data Form */}
+      {isMobile ? (
+        <CreateDataFormMobile
+          isOpen={isCreateFormOpen}
+          onClose={() => setIsCreateFormOpen(false)}
+        />
+      ) : (
+        <CreateDataForm
+          isOpen={isCreateFormOpen}
+          onClose={() => setIsCreateFormOpen(false)}
+        />
+      )}
     </div>
   );
 }
