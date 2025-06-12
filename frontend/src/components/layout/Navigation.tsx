@@ -9,6 +9,10 @@ interface NavItem {
   icon: React.ReactNode;
 }
 
+interface NavigationProps {
+  variant: "horizontal" | "sidebar";
+}
+
 const navItems: NavItem[] = [
   {
     id: "data-mapping",
@@ -138,9 +142,36 @@ const navItems: NavItem[] = [
   },
 ];
 
-export default function Sidebar() {
+export default function Navigation({ variant }: NavigationProps) {
   const pathname = usePathname();
 
+  if (variant === "horizontal") {
+    return (
+      <nav className="border-b border-gray-200 px-4 py-3">
+        <div className="flex space-x-1 overflow-x-auto scrollbar-hide">
+          {navItems.map((item) => {
+            const isActive = pathname === item.path;
+            return (
+              <Link
+                key={item.id}
+                href={item.path}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-lg whitespace-nowrap transition-colors ${
+                  isActive
+                    ? "text-green-600 bg-green-50"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                {item.icon}
+                <span className="text-sm font-medium">{item.title}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    );
+  }
+
+  // Sidebar variant
   return (
     <aside className="hidden lg:block w-64 min-h-screen">
       <div className="px-6 py-6">

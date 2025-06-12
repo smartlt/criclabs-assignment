@@ -1,12 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import Sidebar from "@/components/layout/Sidebar";
-import HorizontalNav from "@/components/layout/HorizontalNav";
+import Navigation from "@/components/layout/Navigation";
 import TopBar from "@/components/layout/TopBar";
 import DataMappingTable from "@/components/data-mapping/DataMappingTable";
 import CreateDataForm from "@/components/data-mapping/CreateDataForm";
-import CreateDataFormMobile from "@/components/data-mapping/CreateDataFormMobile";
 import { useScreenSize } from "@/hooks/useScreenSize";
 
 export default function DataMappingPage() {
@@ -20,12 +18,12 @@ export default function DataMappingPage() {
 
       {/* Horizontal Navigation for medium and small screens */}
       <div className="lg:hidden">
-        <HorizontalNav />
+        <Navigation variant="horizontal" />
       </div>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar for large screens */}
-        <Sidebar />
+        <Navigation variant="sidebar" />
 
         <main className="flex-1 overflow-auto">
           <div className="py-6">
@@ -224,17 +222,11 @@ export default function DataMappingPage() {
       </div>
 
       {/* Create Data Form */}
-      {isMobile ? (
-        <CreateDataFormMobile
-          isOpen={isCreateFormOpen}
-          onClose={() => setIsCreateFormOpen(false)}
-        />
-      ) : (
-        <CreateDataForm
-          isOpen={isCreateFormOpen}
-          onClose={() => setIsCreateFormOpen(false)}
-        />
-      )}
+      <CreateDataForm
+        isOpen={isCreateFormOpen}
+        onClose={() => setIsCreateFormOpen(false)}
+        isMobile={isMobile}
+      />
     </div>
   );
 }

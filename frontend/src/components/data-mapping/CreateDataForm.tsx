@@ -8,6 +8,7 @@ import {
 interface CreateDataFormProps {
   isOpen: boolean;
   onClose: () => void;
+  isMobile?: boolean;
 }
 
 interface FormData {
@@ -33,6 +34,7 @@ const dataSubjectTypeOptions = [
 export default function CreateDataForm({
   isOpen,
   onClose,
+  isMobile = false,
 }: CreateDataFormProps) {
   const { createDataMapping } = useDataMapping();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -121,34 +123,66 @@ export default function CreateDataForm({
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/20 z-40" onClick={handleClose} />
 
-      {/* Slide-out form */}
-      <div className="fixed right-0 top-0 h-full w-96 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out">
-        <div className="flex flex-col h-full">
+      {/* Form - responsive layout */}
+      <div
+        className={`fixed bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+          isMobile
+            ? "inset-0 mt-16 rounded-t-lg flex flex-col"
+            : "right-0 top-0 h-full w-96"
+        }`}
+      >
+        <div
+          className={isMobile ? "flex flex-col h-full" : "flex flex-col h-full"}
+        >
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">New Data</h2>
-            <div className="flex items-center space-x-3">
-              <button
-                type="button"
-                onClick={handleClose}
-                disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-medium text-black bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                form="create-data-form"
-                disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
-              >
-                {isSubmitting ? "Saving..." : "Save"}
-              </button>
-            </div>
+          <div
+            className={`flex items-center justify-between border-b border-gray-200 bg-white ${
+              isMobile ? "p-4 rounded-t-lg" : "p-6"
+            }`}
+          >
+            {isMobile ? (
+              <>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  New Data
+                </h2>
+                <button
+                  type="submit"
+                  form="create-data-form"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                >
+                  {isSubmitting ? "Saving..." : "Save"}
+                </button>
+              </>
+            ) : (
+              <>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  New Data
+                </h2>
+                <div className="flex items-center space-x-3">
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    disabled={isSubmitting}
+                    className="px-4 py-2 text-sm font-medium text-black bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    form="create-data-form"
+                    disabled={isSubmitting}
+                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                  >
+                    {isSubmitting ? "Saving..." : "Save"}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Form */}
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className={`flex-1 overflow-y-auto ${isMobile ? "p-4" : "p-6"}`}>
             <form
               id="create-data-form"
               onSubmit={handleSubmit}
@@ -169,7 +203,9 @@ export default function CreateDataForm({
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, title: e.target.value }))
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-black"
+                  className={`w-full px-3 border border-gray-300 rounded-md text-black ${
+                    isMobile ? "py-3 text-base" : "py-2"
+                  }`}
                   placeholder="Enter title"
                 />
                 {errors.title && (
@@ -195,7 +231,9 @@ export default function CreateDataForm({
                       description: e.target.value,
                     }))
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-black"
+                  className={`w-full px-3 border border-gray-300 rounded-md text-black ${
+                    isMobile ? "py-3 text-base" : "py-2"
+                  }`}
                   placeholder="Enter description"
                 />
                 {errors.description && (
@@ -222,7 +260,9 @@ export default function CreateDataForm({
                       department: e.target.value as Department,
                     }))
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-black"
+                  className={`w-full px-3 border border-gray-300 rounded-md text-black ${
+                    isMobile ? "py-3 text-base" : "py-2"
+                  }`}
                 >
                   <option value="">Select Department</option>
                   {departmentOptions.map((option) => (
@@ -240,12 +280,19 @@ export default function CreateDataForm({
 
               {/* Data Subject Types */}
               <div>
-                <label className="block text-sm font-medium text-black mb-2">
+                <label
+                  className={`block text-sm font-medium text-black ${
+                    isMobile ? "mb-3" : "mb-2"
+                  }`}
+                >
                   Data Subject Type (Optional)
                 </label>
-                <div className="space-y-2">
+                <div className={isMobile ? "space-y-3" : "space-y-2"}>
                   {dataSubjectTypeOptions.map((option) => (
-                    <label key={option.value} className="flex items-center">
+                    <label
+                      key={option.value}
+                      className={`flex items-center ${isMobile ? "py-2" : ""}`}
+                    >
                       <input
                         type="checkbox"
                         checked={formData.dataSubjectTypes.includes(
@@ -254,9 +301,15 @@ export default function CreateDataForm({
                         onChange={() =>
                           handleDataSubjectTypeChange(option.value)
                         }
-                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                        className={`text-green-600 focus:ring-green-500 border-gray-300 rounded ${
+                          isMobile ? "h-5 w-5" : "h-4 w-4"
+                        }`}
                       />
-                      <span className="ml-2 text-sm text-black">
+                      <span
+                        className={`text-black ${
+                          isMobile ? "ml-3 text-base" : "ml-2 text-sm"
+                        }`}
+                      >
                         {option.label}
                       </span>
                     </label>
