@@ -145,14 +145,24 @@ export default function CreateDataForm({
                 <h2 className="text-lg font-semibold text-gray-900">
                   New Data
                 </h2>
-                <button
-                  type="submit"
-                  form="create-data-form"
-                  disabled={isSubmitting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
-                >
-                  {isSubmitting ? "Saving..." : "Save"}
-                </button>
+                <div className="flex items-center space-x-3">
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    disabled={isSubmitting}
+                    className="px-4 py-2 text-black bg-white  rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    form="create-data-form"
+                    disabled={isSubmitting}
+                    className="px-4 py-2 text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                  >
+                    {isSubmitting ? "Saving..." : "Save"}
+                  </button>
+                </div>
               </>
             ) : (
               <>
@@ -164,7 +174,7 @@ export default function CreateDataForm({
                     type="button"
                     onClick={handleClose}
                     disabled={isSubmitting}
-                    className="px-4 py-2 text-sm font-medium text-black bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                    className="px-4 py-2 text-black bg-white  rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
                   >
                     Cancel
                   </button>
@@ -172,7 +182,7 @@ export default function CreateDataForm({
                     type="submit"
                     form="create-data-form"
                     disabled={isSubmitting}
-                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                    className="px-4 py-2 text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
                   >
                     {isSubmitting ? "Saving..." : "Save"}
                   </button>
@@ -190,10 +200,7 @@ export default function CreateDataForm({
             >
               {/* Title */}
               <div>
-                <label
-                  htmlFor="title"
-                  className="block text-sm font-medium text-black mb-2"
-                >
+                <label htmlFor="title" className="block text-black mb-2">
                   Title *
                 </label>
                 <input
@@ -215,10 +222,7 @@ export default function CreateDataForm({
 
               {/* Description */}
               <div>
-                <label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-black mb-2"
-                >
+                <label htmlFor="description" className="block text-black mb-2">
                   Description
                 </label>
                 <textarea
@@ -245,10 +249,7 @@ export default function CreateDataForm({
 
               {/* Department */}
               <div>
-                <label
-                  htmlFor="department"
-                  className="block text-sm font-medium text-black mb-2"
-                >
+                <label htmlFor="department" className="block text-black mb-2">
                   Department *
                 </label>
                 <select
@@ -281,9 +282,7 @@ export default function CreateDataForm({
               {/* Data Subject Types */}
               <div>
                 <label
-                  className={`block text-sm font-medium text-black ${
-                    isMobile ? "mb-3" : "mb-2"
-                  }`}
+                  className={`block text-black ${isMobile ? "mb-3" : "mb-2"}`}
                 >
                   Data Subject Type (Optional)
                 </label>
