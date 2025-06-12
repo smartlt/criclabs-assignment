@@ -18,7 +18,17 @@ interface DataMapping {
 type SortField = "title" | "description" | "department" | "dataSubjectTypes";
 type SortDirection = "asc" | "desc";
 
-export default function DataMappingTable() {
+interface FilterState {
+  title: string;
+  departments: Department[];
+  dataSubjectTypes: DataSubjectType[];
+}
+
+interface DataMappingTableProps {
+  filters?: FilterState;
+}
+
+export default function DataMappingTable({ filters }: DataMappingTableProps) {
   const { data, isLoading, error, deleteDataMapping } = useDataMapping();
   const [sortField, setSortField] = useState<SortField>("title");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
@@ -35,7 +45,43 @@ export default function DataMappingTable() {
   const sortedData = useMemo(() => {
     if (!data) return [];
 
-    return [...data].sort((a, b) => {
+    // Apply filters first
+    let filteredData = [...data];
+
+    if (filters) {
+      filteredData = filteredData.filter((item) => {
+        // Title filter (partial match, case-insensitive)
+        if (
+          filters.title &&
+          !item.title.toLowerCase().includes(filters.title.toLowerCase())
+        ) {
+          return false;
+        }
+
+        // Department filter
+        if (
+          filters.departments.length > 0 &&
+          !filters.departments.includes(item.department)
+        ) {
+          return false;
+        }
+
+        // Data Subject Type filter
+        if (filters.dataSubjectTypes.length > 0) {
+          const hasMatchingType = filters.dataSubjectTypes.some((filterType) =>
+            item.dataSubjectTypes.includes(filterType)
+          );
+          if (!hasMatchingType) {
+            return false;
+          }
+        }
+
+        return true;
+      });
+    }
+
+    // Then apply sorting
+    return filteredData.sort((a, b) => {
       let aValue: string;
       let bValue: string;
 
@@ -64,7 +110,7 @@ export default function DataMappingTable() {
       if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
       return 0;
     });
-  }, [data, sortField, sortDirection]);
+  }, [data, sortField, sortDirection, filters]);
 
   const SortableHeader = ({
     field,
@@ -74,7 +120,7 @@ export default function DataMappingTable() {
     children: React.ReactNode;
   }) => (
     <th
-      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none sticky top-0 z-10 bg-gray-50"
       onClick={() => handleSort(field)}
     >
       <div className="flex items-center space-x-1">
@@ -142,8 +188,8 @@ export default function DataMappingTable() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="overflow-x-auto">
+    <div className="bg-white rounded-lg shadow h-96 flex flex-col">
+      <div className="flex-1 overflow-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -153,7 +199,7 @@ export default function DataMappingTable() {
               <SortableHeader field="dataSubjectTypes">
                 Data Subject Types
               </SortableHeader>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 z-10 bg-gray-50">
                 Actions
               </th>
             </tr>

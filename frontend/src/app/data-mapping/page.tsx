@@ -5,12 +5,31 @@ import Navigation from "@/components/layout/Navigation";
 import TopBar from "@/components/layout/TopBar";
 import DataMappingTable from "@/components/data-mapping/DataMappingTable";
 import CreateDataForm from "@/components/data-mapping/CreateDataForm";
-import { useScreenSize } from "@/hooks/useScreenSize";
+import FilterPanel, {
+  FilterState,
+} from "@/components/data-mapping/FilterPanel";
 
 export default function DataMappingPage() {
   const [activeTab, setActiveTab] = useState("data-mapping");
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
-  const { isMobile } = useScreenSize();
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filters, setFilters] = useState<FilterState>({
+    title: "",
+    departments: [],
+    dataSubjectTypes: [],
+  });
+
+  const handleApplyFilter = (newFilters: FilterState) => {
+    setFilters(newFilters);
+  };
+
+  const handleResetFilter = () => {
+    setFilters({
+      title: "",
+      departments: [],
+      dataSubjectTypes: [],
+    });
+  };
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -36,6 +55,7 @@ export default function DataMappingPage() {
                 <div className="flex items-center space-x-3">
                   <button
                     type="button"
+                    onClick={() => setIsFilterOpen(true)}
                     className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm rounded-md text-black bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                   >
                     <svg
@@ -208,7 +228,9 @@ export default function DataMappingPage() {
               </div>
 
               {/* Content based on active tab */}
-              {activeTab === "data-mapping" && <DataMappingTable />}
+              {activeTab === "data-mapping" && (
+                <DataMappingTable filters={filters} />
+              )}
               {activeTab === "collection-sources" && (
                 <div className="bg-white rounded-lg shadow p-6">
                   <p className="text-gray-500">
@@ -225,7 +247,14 @@ export default function DataMappingPage() {
       <CreateDataForm
         isOpen={isCreateFormOpen}
         onClose={() => setIsCreateFormOpen(false)}
-        isMobile={isMobile}
+      />
+
+      {/* Filter Panel */}
+      <FilterPanel
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        onApplyFilter={handleApplyFilter}
+        onResetFilter={handleResetFilter}
       />
     </div>
   );
