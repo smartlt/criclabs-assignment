@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 import {
   useDataMapping,
   Department,
@@ -15,8 +15,105 @@ interface DataMapping {
   updatedAt: string;
 }
 
+type SortField = "title" | "description" | "department" | "dataSubjectTypes";
+type SortDirection = "asc" | "desc";
+
 export default function DataMappingTable() {
   const { data, isLoading, error, deleteDataMapping } = useDataMapping();
+  const [sortField, setSortField] = useState<SortField>("title");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const sortedData = useMemo(() => {
+    if (!data) return [];
+
+    return [...data].sort((a, b) => {
+      let aValue: string;
+      let bValue: string;
+
+      switch (sortField) {
+        case "title":
+          aValue = a.title.toLowerCase();
+          bValue = b.title.toLowerCase();
+          break;
+        case "description":
+          aValue = a.description.toLowerCase();
+          bValue = b.description.toLowerCase();
+          break;
+        case "department":
+          aValue = a.department.toLowerCase();
+          bValue = b.department.toLowerCase();
+          break;
+        case "dataSubjectTypes":
+          aValue = a.dataSubjectTypes.join(", ").toLowerCase();
+          bValue = b.dataSubjectTypes.join(", ").toLowerCase();
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [data, sortField, sortDirection]);
+
+  const SortableHeader = ({
+    field,
+    children,
+  }: {
+    field: SortField;
+    children: React.ReactNode;
+  }) => (
+    <th
+      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+      onClick={() => handleSort(field)}
+    >
+      <div className="flex items-center space-x-1">
+        <span>{children}</span>
+        <div className="flex flex-col">
+          <svg
+            className={`w-3 h-3 ${
+              sortField === field && sortDirection === "asc"
+                ? "text-green-600"
+                : "text-gray-400"
+            }`}
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <svg
+            className={`w-3 h-3 -mt-1 ${
+              sortField === field && sortDirection === "desc"
+                ? "text-green-600"
+                : "text-gray-400"
+            }`}
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </div>
+      </div>
+    </th>
+  );
 
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this data mapping?")) {
@@ -50,26 +147,20 @@ export default function DataMappingTable() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Title
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Description
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Department
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <SortableHeader field="title">Title</SortableHeader>
+              <SortableHeader field="description">Description</SortableHeader>
+              <SortableHeader field="department">Department</SortableHeader>
+              <SortableHeader field="dataSubjectTypes">
                 Data Subject Types
-              </th>
+              </SortableHeader>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {data && data.length > 0 ? (
-              data.map((item: DataMapping) => (
+            {sortedData && sortedData.length > 0 ? (
+              sortedData.map((item: DataMapping) => (
                 <tr key={item._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {item.title}
