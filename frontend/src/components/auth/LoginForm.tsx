@@ -19,17 +19,17 @@ interface FormErrors {
 // Shield Logo Component
 const ShieldIcon = () => (
   <svg
-    className="w-12 h-12 text-green-600"
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
     xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth="1.5"
+    stroke="currentColor"
+    className="size-6"
   >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
-      strokeWidth={2}
-      d="M20.618 5.984A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+      d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"
     />
   </svg>
 );
@@ -113,7 +113,7 @@ export default function LoginForm() {
       localStorage.setItem("user", JSON.stringify(user));
 
       // Redirect to dashboard
-      router.push("/dashboard");
+      router.push("/data-mapping");
     } catch (error) {
       // Ensure no auth data is stored on error
       localStorage.removeItem("token");
@@ -134,7 +134,7 @@ export default function LoginForm() {
         <div className="max-w-md w-full">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-8 py-10">
             {/* Logo */}
-            <div className="flex justify-left mb-8">
+            <div className="flex justify-left mb-8 text-green-600">
               <ShieldIcon />
             </div>
 
