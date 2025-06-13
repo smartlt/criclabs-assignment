@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import SlideOutPanel from "@/components/ui/SlideOutPanel";
-import { Department, DataSubjectType } from "@/hooks/useDataMapping";
+import { Department, DataSubjectType, FilterState } from "@/types/data-mapping";
+import {
+  DEPARTMENT_OPTIONS,
+  DATA_SUBJECT_TYPE_OPTIONS,
+} from "@/constants/data-mapping";
 
 interface FilterPanelProps {
   isOpen: boolean;
@@ -9,24 +13,8 @@ interface FilterPanelProps {
   onResetFilter: () => void;
 }
 
-export interface FilterState {
-  title: string;
-  departments: Department[];
-  dataSubjectTypes: DataSubjectType[];
-}
-
-const departmentOptions = [
-  { value: Department.HUMAN_RESOURCES, label: "Human Resources" },
-  { value: Department.IT_IS, label: "IT/IS" },
-  { value: Department.ADMISSION, label: "Admission" },
-  { value: Department.MARKETING, label: "Marketing" },
-];
-
-const dataSubjectTypeOptions = [
-  { value: DataSubjectType.EMPLOYEES, label: "Employees" },
-  { value: DataSubjectType.FACULTY_STAFF, label: "Faculty Staff" },
-  { value: DataSubjectType.STUDENTS, label: "Students" },
-];
+// Re-export FilterState for backward compatibility
+export type { FilterState };
 
 export default function FilterPanel({
   isOpen,
@@ -142,7 +130,7 @@ export default function FilterPanel({
             DEPARTMENT
           </label>
           <div className="space-y-3">
-            {departmentOptions.map((option) => (
+            {DEPARTMENT_OPTIONS.map((option) => (
               <label key={option.value} className="flex items-center">
                 <input
                   type="checkbox"
@@ -162,7 +150,7 @@ export default function FilterPanel({
             DATA SUBJECT
           </label>
           <div className="space-y-3">
-            {dataSubjectTypeOptions.map((option) => (
+            {DATA_SUBJECT_TYPE_OPTIONS.map((option) => (
               <label key={option.value} className="flex items-center">
                 <input
                   type="checkbox"

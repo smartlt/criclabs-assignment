@@ -1,68 +1,18 @@
 import { useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api";
+import {
+  Department,
+  DataSubjectType,
+  DataMapping,
+  QueryParams,
+  PaginationInfo,
+  DataMappingResponse,
+  UseDataMappingReturn,
+} from "@/types/data-mapping";
 
-export enum Department {
-  HUMAN_RESOURCES = "Human Resources",
-  IT_IS = "IT/IS",
-  ADMISSION = "Admission",
-  MARKETING = "Marketing",
-}
-
-export enum DataSubjectType {
-  EMPLOYEES = "Employees",
-  FACULTY_STAFF = "Faculty Staff",
-  STUDENTS = "Students",
-}
-
-interface DataMapping {
-  _id: string;
-  title: string;
-  description: string;
-  department: Department;
-  dataSubjectTypes: DataSubjectType[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface QueryParams {
-  title?: string;
-  departments?: Department[];
-  dataSubjectTypes?: DataSubjectType[];
-  sortField?: string;
-  sortDirection?: "asc" | "desc";
-  page?: number;
-  limit?: number;
-}
-
-interface PaginationInfo {
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-}
-
-interface DataMappingResponse {
-  data: DataMapping[];
-  pagination: PaginationInfo;
-}
-
-interface UseDataMappingReturn {
-  data: DataMapping[] | null;
-  pagination: PaginationInfo | null;
-  isLoading: boolean;
-  error: Error | null;
-  fetchDataMappings: (params?: QueryParams) => Promise<void>;
-  createDataMapping: (
-    data: Omit<DataMapping, "_id" | "createdAt" | "updatedAt">
-  ) => Promise<void>;
-  updateDataMapping: (
-    id: string,
-    data: Partial<Omit<DataMapping, "_id" | "createdAt" | "updatedAt">>
-  ) => Promise<void>;
-  deleteDataMapping: (id: string) => Promise<void>;
-}
+// Re-export enums for backward compatibility
+export { Department, DataSubjectType };
+import { ERROR_MESSAGES } from "@/constants/data-mapping";
 
 export function useDataMapping(): UseDataMappingReturn {
   const [data, setData] = useState<DataMapping[] | null>(null);
@@ -108,7 +58,7 @@ export function useDataMapping(): UseDataMappingReturn {
       setPagination(response.data.pagination);
     } catch (err) {
       setError(
-        err instanceof Error ? err : new Error("Failed to fetch data mappings")
+        err instanceof Error ? err : new Error(ERROR_MESSAGES.FETCH_FAILED)
       );
     } finally {
       setIsLoading(false);
@@ -123,10 +73,10 @@ export function useDataMapping(): UseDataMappingReturn {
       if (response.status !== 201) {
         throw new Error("Failed to create data mapping");
       }
-      await fetchDataMappings(currentParams);
+      // Don't auto-refresh here - let the component handle it
     } catch (err) {
       setError(
-        err instanceof Error ? err : new Error("Failed to create data mapping")
+        err instanceof Error ? err : new Error(ERROR_MESSAGES.CREATE_FAILED)
       );
       throw err;
     }
@@ -144,7 +94,7 @@ export function useDataMapping(): UseDataMappingReturn {
       await fetchDataMappings(currentParams);
     } catch (err) {
       setError(
-        err instanceof Error ? err : new Error("Failed to update data mapping")
+        err instanceof Error ? err : new Error(ERROR_MESSAGES.UPDATE_FAILED)
       );
       throw err;
     }
@@ -159,7 +109,7 @@ export function useDataMapping(): UseDataMappingReturn {
       await fetchDataMappings(currentParams);
     } catch (err) {
       setError(
-        err instanceof Error ? err : new Error("Failed to delete data mapping")
+        err instanceof Error ? err : new Error(ERROR_MESSAGES.DELETE_FAILED)
       );
       throw err;
     }

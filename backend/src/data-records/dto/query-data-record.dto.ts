@@ -60,7 +60,7 @@ export class QueryDataRecordDto {
       'updatedAt',
     ],
     required: false,
-    default: 'title',
+    default: 'createdAt',
   })
   @IsOptional()
   @IsString()
@@ -72,18 +72,18 @@ export class QueryDataRecordDto {
     'createdAt',
     'updatedAt',
   ])
-  sortField?: string = 'title';
+  sortField?: string = 'createdAt';
 
   @ApiProperty({
     description: 'Sort direction',
     enum: ['asc', 'desc'],
     required: false,
-    default: 'asc',
+    default: 'desc',
   })
   @IsOptional()
   @IsString()
   @IsIn(['asc', 'desc'])
-  sortDirection?: 'asc' | 'desc' = 'asc';
+  sortDirection?: 'asc' | 'desc' = 'desc';
 
   @ApiProperty({
     description: 'Page number for pagination',

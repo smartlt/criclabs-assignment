@@ -13,6 +13,7 @@ export default function DataMappingPage() {
   const [activeTab, setActiveTab] = useState("data-mapping");
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [filters, setFilters] = useState<FilterState>({
     title: "",
     departments: [],
@@ -229,7 +230,10 @@ export default function DataMappingPage() {
 
               {/* Content based on active tab */}
               {activeTab === "data-mapping" && (
-                <DataMappingTable filters={filters} />
+                <DataMappingTable
+                  filters={filters}
+                  refreshTrigger={refreshTrigger}
+                />
               )}
               {activeTab === "collection-sources" && (
                 <div className="bg-white rounded-lg shadow p-6">
@@ -247,6 +251,10 @@ export default function DataMappingPage() {
       <CreateDataForm
         isOpen={isCreateFormOpen}
         onClose={() => setIsCreateFormOpen(false)}
+        onSuccess={() => {
+          setRefreshTrigger((prev) => prev + 1);
+          setIsCreateFormOpen(false);
+        }}
       />
 
       {/* Filter Panel */}

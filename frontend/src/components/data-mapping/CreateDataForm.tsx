@@ -1,45 +1,34 @@
 import React, { useState } from "react";
+import { useDataMapping } from "@/hooks/useDataMapping";
 import {
-  useDataMapping,
   Department,
   DataSubjectType,
-} from "@/hooks/useDataMapping";
+  CreateDataFormData,
+  FormErrors,
+} from "@/types/data-mapping";
+import {
+  DEPARTMENT_OPTIONS,
+  DATA_SUBJECT_TYPE_OPTIONS,
+  VALIDATION_MESSAGES,
+} from "@/constants/data-mapping";
 import SlideOutPanel from "@/components/ui/SlideOutPanel";
 
 interface CreateDataFormProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
-
-interface FormData {
-  title: string;
-  description: string;
-  department: Department | "";
-  dataSubjectTypes: DataSubjectType[];
-}
-
-const departmentOptions = [
-  { value: Department.HUMAN_RESOURCES, label: "Human Resources" },
-  { value: Department.IT_IS, label: "IT/IS" },
-  { value: Department.ADMISSION, label: "Admission" },
-  { value: Department.MARKETING, label: "Marketing" },
-];
-
-const dataSubjectTypeOptions = [
-  { value: DataSubjectType.EMPLOYEES, label: "Employees" },
-  { value: DataSubjectType.FACULTY_STAFF, label: "Faculty Staff" },
-  { value: DataSubjectType.STUDENTS, label: "Students" },
-];
 
 export default function CreateDataForm({
   isOpen,
   onClose,
+  onSuccess,
 }: CreateDataFormProps) {
   const { createDataMapping } = useDataMapping();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<CreateDataFormData>({
     title: "",
     description: "",
     department: "",
@@ -47,14 +36,14 @@ export default function CreateDataForm({
   });
 
   const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
+    const newErrors: FormErrors = {};
 
     if (!formData.title.trim()) {
-      newErrors.title = "Title is required";
+      newErrors.title = VALIDATION_MESSAGES.TITLE_REQUIRED;
     }
 
     if (!formData.department) {
-      newErrors.department = "Department is required";
+      newErrors.department = VALIDATION_MESSAGES.DEPARTMENT_REQUIRED;
     }
 
     setErrors(newErrors);
@@ -85,7 +74,13 @@ export default function CreateDataForm({
         dataSubjectTypes: [],
       });
       setErrors({});
-      onClose();
+
+      // Call onSuccess if provided, otherwise just close
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        onClose();
+      }
     } catch (error) {
       console.error("Failed to create data mapping:", error);
     } finally {
@@ -213,7 +208,7 @@ export default function CreateDataForm({
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-black"
           >
             <option value="">Select Department</option>
-            {departmentOptions.map((option) => (
+            {DEPARTMENT_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -230,7 +225,7 @@ export default function CreateDataForm({
             Data Subject Type (Optional)
           </label>
           <div className="space-y-2">
-            {dataSubjectTypeOptions.map((option) => (
+            {DATA_SUBJECT_TYPE_OPTIONS.map((option) => (
               <label key={option.value} className="flex items-center">
                 <input
                   type="checkbox"

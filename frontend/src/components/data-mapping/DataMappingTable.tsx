@@ -1,39 +1,28 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useDataMapping } from "@/hooks/useDataMapping";
 import {
-  useDataMapping,
-  Department,
-  DataSubjectType,
-} from "@/hooks/useDataMapping";
-
-interface DataMapping {
-  _id: string;
-  title: string;
-  description: string;
-  department: Department;
-  dataSubjectTypes: DataSubjectType[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-type SortField =
-  | "title"
-  | "description"
-  | "department"
-  | "dataSubjectTypes"
-  | "createdAt";
-type SortDirection = "asc" | "desc";
-
-interface FilterState {
-  title: string;
-  departments: Department[];
-  dataSubjectTypes: DataSubjectType[];
-}
+  DataMapping,
+  SortField,
+  SortDirection,
+  FilterState,
+  QueryParams,
+} from "@/types/data-mapping";
+import {
+  SORT_DEFAULTS,
+  PAGINATION_DEFAULTS,
+  TABLE_HEIGHT_CLASS,
+  ERROR_MESSAGES,
+} from "@/constants/data-mapping";
 
 interface DataMappingTableProps {
   filters?: FilterState;
+  refreshTrigger?: number;
 }
 
-export default function DataMappingTable({ filters }: DataMappingTableProps) {
+export default function DataMappingTable({
+  filters,
+  refreshTrigger,
+}: DataMappingTableProps) {
   const {
     data,
     pagination,
@@ -42,22 +31,44 @@ export default function DataMappingTable({ filters }: DataMappingTableProps) {
     fetchDataMappings,
     deleteDataMapping,
   } = useDataMapping();
-  const [sortField, setSortField] = useState<SortField>("createdAt");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [sortField, setSortField] = useState<SortField>(SORT_DEFAULTS.FIELD);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(
+    SORT_DEFAULTS.DIRECTION
+  );
 
-  // Fetch data when filters or sorting changes
-  useEffect(() => {
-    const queryParams = {
+  // Keep track of current query parameters
+  const currentQueryParams = useRef<QueryParams>({});
+
+  // Build current query parameters
+  const buildQueryParams = useCallback((): QueryParams => {
+    return {
       title: filters?.title,
       departments: filters?.departments,
       dataSubjectTypes: filters?.dataSubjectTypes,
       sortField,
       sortDirection,
-      limit: 50, // You can make this configurable
+      limit: PAGINATION_DEFAULTS.LIMIT,
     };
+  }, [filters, sortField, sortDirection]);
 
+  // Create a refresh function that uses current parameters
+  const refreshTable = useCallback(() => {
+    const queryParams = buildQueryParams();
+    currentQueryParams.current = queryParams;
     fetchDataMappings(queryParams);
-  }, [filters, sortField, sortDirection]); // Removed fetchDataMappings from deps to avoid infinite loop
+  }, [buildQueryParams, fetchDataMappings]);
+
+  // Fetch data when filters or sorting changes
+  useEffect(() => {
+    refreshTable();
+  }, [filters, sortField, sortDirection, refreshTable]);
+
+  // Refresh when refreshTrigger changes
+  useEffect(() => {
+    if (refreshTrigger !== undefined) {
+      refreshTable();
+    }
+  }, [refreshTrigger, refreshTable]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -118,14 +129,14 @@ export default function DataMappingTable({ filters }: DataMappingTableProps) {
   );
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this data mapping?")) {
+    if (window.confirm(ERROR_MESSAGES.DELETE_CONFIRM)) {
       try {
         await deleteDataMapping(id);
         // Success feedback could be added here if needed
       } catch (error) {
         console.error("Failed to delete data mapping:", error);
         // Show user-friendly error message
-        alert("Failed to delete data mapping. Please try again.");
+        alert(ERROR_MESSAGES.DELETE_FAILED + ". Please try again.");
       }
     }
   };
@@ -147,7 +158,9 @@ export default function DataMappingTable({ filters }: DataMappingTableProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow h-130 flex flex-col">
+    <div
+      className={`bg-white rounded-lg shadow ${TABLE_HEIGHT_CLASS} flex flex-col`}
+    >
       {/* Pagination info */}
       {pagination && (
         <div className="px-6 py-3 border-b border-gray-200 bg-gray-50">
