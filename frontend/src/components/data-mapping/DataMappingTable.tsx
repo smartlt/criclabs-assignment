@@ -13,6 +13,7 @@ import {
   TABLE_HEIGHT_CLASS,
   ERROR_MESSAGES,
 } from "@/constants/data-mapping";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 interface DataMappingTableProps {
   filters?: FilterState;
@@ -132,11 +133,10 @@ export default function DataMappingTable({
     if (window.confirm(ERROR_MESSAGES.DELETE_CONFIRM)) {
       try {
         await deleteDataMapping(id);
-        // Success feedback could be added here if needed
-      } catch (error) {
-        console.error("Failed to delete data mapping:", error);
-        // Show user-friendly error message
-        alert(ERROR_MESSAGES.DELETE_FAILED + ". Please try again.");
+        // Success feedback is handled by the hook
+      } catch {
+        // Error feedback is handled by the hook with toast notifications
+        // Additional user feedback could be added here if needed
       }
     }
   };
@@ -144,7 +144,10 @@ export default function DataMappingTable({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div className="flex flex-col items-center space-y-3">
+          <LoadingSpinner size="lg" />
+          <p className="text-sm text-gray-500">Loading data mappings...</p>
+        </div>
       </div>
     );
   }

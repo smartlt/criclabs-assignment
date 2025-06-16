@@ -46,6 +46,11 @@ export const ERROR_MESSAGES = {
   DELETE_FAILED: "Failed to delete data mapping",
   DELETE_CONFIRM: "Are you sure you want to delete this data mapping?",
   GENERIC_ERROR: "An error occurred. Please try again.",
+  NETWORK_ERROR: "Network error. Please check your connection and try again.",
+  UNAUTHORIZED: "Your session has expired. Please log in again.",
+  FORBIDDEN: "You don't have permission to perform this action.",
+  NOT_FOUND: "The requested resource was not found.",
+  SERVER_ERROR: "Server error. Please try again later.",
 } as const;
 
 // Success messages
@@ -53,4 +58,15 @@ export const SUCCESS_MESSAGES = {
   CREATE_SUCCESS: "Data mapping created successfully",
   UPDATE_SUCCESS: "Data mapping updated successfully",
   DELETE_SUCCESS: "Data mapping deleted successfully",
+  SAVE_SUCCESS: "Changes saved successfully",
+  COPY_SUCCESS: "Copied to clipboard",
+} as const;
+
+// Loading messages
+export const LOADING_MESSAGES = {
+  FETCHING: "Loading data mappings...",
+  CREATING: "Creating data mapping...",
+  UPDATING: "Updating data mapping...",
+  DELETING: "Deleting data mapping...",
+  SAVING: "Saving changes...",
 } as const;

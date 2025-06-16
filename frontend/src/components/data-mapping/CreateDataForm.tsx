@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useDataMapping } from "@/hooks/useDataMapping";
 import {
   Department,
@@ -12,6 +12,7 @@ import {
   VALIDATION_MESSAGES,
 } from "@/constants/data-mapping";
 import SlideOutPanel from "@/components/ui/SlideOutPanel";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 interface CreateDataFormProps {
   isOpen: boolean;
@@ -34,6 +35,20 @@ export default function CreateDataForm({
     department: "",
     dataSubjectTypes: [],
   });
+
+  const validateField = useCallback(
+    (field: keyof CreateDataFormData, value: string) => {
+      switch (field) {
+        case "title":
+          return !value.trim() ? VALIDATION_MESSAGES.TITLE_REQUIRED : "";
+        case "department":
+          return !value ? VALIDATION_MESSAGES.DEPARTMENT_REQUIRED : "";
+        default:
+          return "";
+      }
+    },
+    []
+  );
 
   const validateForm = () => {
     const newErrors: FormErrors = {};
@@ -81,8 +96,8 @@ export default function CreateDataForm({
       } else {
         onClose();
       }
-    } catch (error) {
-      console.error("Failed to create data mapping:", error);
+    } catch {
+      // Error is already handled by the hook with toast notifications
     } finally {
       setIsSubmitting(false);
     }
@@ -126,7 +141,14 @@ export default function CreateDataForm({
         disabled={isSubmitting}
         className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
       >
-        {isSubmitting ? "Saving..." : "Save"}
+        {isSubmitting ? (
+          <>
+            <LoadingSpinner size="sm" variant="white" className="mr-2" />
+            Saving...
+          </>
+        ) : (
+          "Save"
+        )}
       </button>
     </>
   );
@@ -151,9 +173,14 @@ export default function CreateDataForm({
             type="text"
             id="title"
             value={formData.title}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, title: e.target.value }))
-            }
+            onChange={(e) => {
+              const value = e.target.value;
+              setFormData((prev) => ({ ...prev, title: value }));
+
+              // Real-time validation
+              const error = validateField("title", value);
+              setErrors((prev) => ({ ...prev, title: error }));
+            }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-black"
             placeholder="Enter title"
           />
@@ -199,12 +226,14 @@ export default function CreateDataForm({
           <select
             id="department"
             value={formData.department}
-            onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                department: e.target.value as Department,
-              }))
-            }
+            onChange={(e) => {
+              const value = e.target.value as Department;
+              setFormData((prev) => ({ ...prev, department: value }));
+
+              // Real-time validation
+              const error = validateField("department", value);
+              setErrors((prev) => ({ ...prev, department: error }));
+            }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-black"
           >
             <option value="">Select Department</option>
