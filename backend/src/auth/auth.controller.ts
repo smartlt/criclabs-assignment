@@ -5,6 +5,8 @@ import {
   UseGuards,
   Get,
   Request,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -49,6 +51,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login user' })
   @ApiBody({ type: LoginDto })
   @ApiResponse({
