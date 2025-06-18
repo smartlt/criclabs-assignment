@@ -9,10 +9,12 @@ import {
   DataMappingResponse,
   UseDataMappingReturn,
 } from "@/types/data-mapping";
+import { SUCCESS_MESSAGES } from "@/constants/data-mapping";
+import { useToast } from "@/contexts/ToastContext";
+import { getOperationErrorMessage } from "@/utils/error-handler";
 
 // Re-export enums for backward compatibility
 export { Department, DataSubjectType };
-import { ERROR_MESSAGES } from "@/constants/data-mapping";
 
 export function useDataMapping(): UseDataMappingReturn {
   const [data, setData] = useState<DataMapping[] | null>(null);
@@ -22,6 +24,8 @@ export function useDataMapping(): UseDataMappingReturn {
   const [currentParams, setCurrentParams] = useState<QueryParams | undefined>(
     undefined
   );
+
+  const { showSuccess, showError } = useToast();
 
   const fetchDataMappings = useCallback(async (params?: QueryParams) => {
     try {
@@ -57,9 +61,10 @@ export function useDataMapping(): UseDataMappingReturn {
       setData(response.data.data);
       setPagination(response.data.pagination);
     } catch (err) {
-      setError(
-        err instanceof Error ? err : new Error(ERROR_MESSAGES.FETCH_FAILED)
-      );
+      const errorInfo = getOperationErrorMessage("fetch", err);
+      const error = new Error(errorInfo.message || errorInfo.title);
+      setError(error);
+      showError(errorInfo.title, errorInfo.message);
     } finally {
       setIsLoading(false);
     }
@@ -73,11 +78,13 @@ export function useDataMapping(): UseDataMappingReturn {
       if (response.status !== 201) {
         throw new Error("Failed to create data mapping");
       }
+      showSuccess(SUCCESS_MESSAGES.CREATE_SUCCESS);
       // Don't auto-refresh here - let the component handle it
     } catch (err) {
-      setError(
-        err instanceof Error ? err : new Error(ERROR_MESSAGES.CREATE_FAILED)
-      );
+      const errorInfo = getOperationErrorMessage("create", err);
+      const error = new Error(errorInfo.message || errorInfo.title);
+      setError(error);
+      showError(errorInfo.title, errorInfo.message);
       throw err;
     }
   };
@@ -91,11 +98,13 @@ export function useDataMapping(): UseDataMappingReturn {
       if (!response.data) {
         throw new Error("Failed to update data mapping");
       }
+      showSuccess(SUCCESS_MESSAGES.UPDATE_SUCCESS);
       await fetchDataMappings(currentParams);
     } catch (err) {
-      setError(
-        err instanceof Error ? err : new Error(ERROR_MESSAGES.UPDATE_FAILED)
-      );
+      const errorInfo = getOperationErrorMessage("update", err);
+      const error = new Error(errorInfo.message || errorInfo.title);
+      setError(error);
+      showError(errorInfo.title, errorInfo.message);
       throw err;
     }
   };
@@ -106,11 +115,13 @@ export function useDataMapping(): UseDataMappingReturn {
       if (response.status !== 200) {
         throw new Error("Failed to delete data mapping");
       }
+      showSuccess(SUCCESS_MESSAGES.DELETE_SUCCESS);
       await fetchDataMappings(currentParams);
     } catch (err) {
-      setError(
-        err instanceof Error ? err : new Error(ERROR_MESSAGES.DELETE_FAILED)
-      );
+      const errorInfo = getOperationErrorMessage("delete", err);
+      const error = new Error(errorInfo.message || errorInfo.title);
+      setError(error);
+      showError(errorInfo.title, errorInfo.message);
       throw err;
     }
   };

@@ -1,8 +1,9 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useDataMapping } from "@/hooks/useDataMapping";
 import {
   Department,
   DataSubjectType,
+  DataMapping,
   CreateDataFormData,
   FormErrors,
 } from "@/types/data-mapping";
@@ -14,18 +15,20 @@ import {
 import SlideOutPanel from "@/components/ui/SlideOutPanel";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
-interface CreateDataFormProps {
+interface EditDataFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  dataMapping: DataMapping | null;
 }
 
-export default function CreateDataForm({
+export default function EditDataForm({
   isOpen,
   onClose,
   onSuccess,
-}: CreateDataFormProps) {
-  const { createDataMapping } = useDataMapping();
+  dataMapping,
+}: EditDataFormProps) {
+  const { updateDataMapping } = useDataMapping();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -35,6 +38,19 @@ export default function CreateDataForm({
     department: "",
     dataSubjectTypes: [],
   });
+
+  // Populate form when dataMapping changes
+  useEffect(() => {
+    if (dataMapping) {
+      setFormData({
+        title: dataMapping.title,
+        description: dataMapping.description,
+        department: dataMapping.department,
+        dataSubjectTypes: dataMapping.dataSubjectTypes,
+      });
+      setErrors({});
+    }
+  }, [dataMapping]);
 
   const validateField = useCallback(
     (field: keyof CreateDataFormData, value: string) => {
@@ -68,26 +84,20 @@ export default function CreateDataForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    if (!validateForm() || !dataMapping) {
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await createDataMapping({
+      await updateDataMapping(dataMapping._id, {
         title: formData.title.trim(),
         description: formData.description.trim(),
         department: formData.department as Department,
         dataSubjectTypes: formData.dataSubjectTypes,
       });
 
-      // Reset form and close
-      setFormData({
-        title: "",
-        description: "",
-        department: "",
-        dataSubjectTypes: [],
-      });
+      // Reset errors
       setErrors({});
 
       // Call onSuccess if provided, otherwise just close
@@ -114,12 +124,15 @@ export default function CreateDataForm({
 
   const handleClose = () => {
     if (!isSubmitting) {
-      setFormData({
-        title: "",
-        description: "",
-        department: "",
-        dataSubjectTypes: [],
-      });
+      // Reset form to original data when closing
+      if (dataMapping) {
+        setFormData({
+          title: dataMapping.title,
+          description: dataMapping.description,
+          department: dataMapping.department,
+          dataSubjectTypes: dataMapping.dataSubjectTypes,
+        });
+      }
       setErrors({});
       onClose();
     }
@@ -137,17 +150,17 @@ export default function CreateDataForm({
       </button>
       <button
         type="submit"
-        form="create-data-form"
+        form="edit-data-form"
         disabled={isSubmitting}
         className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
       >
         {isSubmitting ? (
           <>
             <LoadingSpinner size="sm" variant="white" className="mr-2" />
-            Saving...
+            Updating...
           </>
         ) : (
-          "Save"
+          "Update"
         )}
       </button>
     </>
@@ -157,21 +170,21 @@ export default function CreateDataForm({
     <SlideOutPanel
       isOpen={isOpen}
       onClose={handleClose}
-      title="New Data"
+      title="Edit Data"
       actions={actions}
     >
-      <form id="create-data-form" onSubmit={handleSubmit} className="space-y-6">
+      <form id="edit-data-form" onSubmit={handleSubmit} className="space-y-6">
         {/* Title */}
         <div>
           <label
-            htmlFor="title"
+            htmlFor="edit-title"
             className="block text-sm font-medium text-black mb-2"
           >
             Title *
           </label>
           <input
             type="text"
-            id="title"
+            id="edit-title"
             value={formData.title}
             onChange={(e) => {
               const value = e.target.value;
@@ -192,13 +205,13 @@ export default function CreateDataForm({
         {/* Description */}
         <div>
           <label
-            htmlFor="description"
+            htmlFor="edit-description"
             className="block text-sm font-medium text-black mb-2"
           >
             Description
           </label>
           <textarea
-            id="description"
+            id="edit-description"
             rows={4}
             value={formData.description}
             onChange={(e) =>
@@ -218,13 +231,13 @@ export default function CreateDataForm({
         {/* Department */}
         <div>
           <label
-            htmlFor="department"
+            htmlFor="edit-department"
             className="block text-sm font-medium text-black mb-2"
           >
             Department *
           </label>
           <select
-            id="department"
+            id="edit-department"
             value={formData.department}
             onChange={(e) => {
               const value = e.target.value as Department;

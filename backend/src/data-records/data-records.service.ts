@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model } from 'mongoose';
 import { DataRecord, DataRecordDocument } from '../schemas/data-record.schema';
@@ -95,20 +91,10 @@ export class DataRecordsService {
     return dataRecord;
   }
 
-  async update(
-    id: string,
-    updateDataRecordDto: UpdateDataRecordDto,
-    user: UserDocument,
-  ) {
+  async update(id: string, updateDataRecordDto: UpdateDataRecordDto) {
     const dataRecord = await this.dataRecordModel.findById(id);
-    const userId = user._id;
     if (!dataRecord) {
       throw new NotFoundException('Data record not found');
-    }
-
-    // Check if user owns the record
-    if (dataRecord.createdBy.toString() !== userId) {
-      throw new ForbiddenException('You can only update your own records');
     }
 
     return this.dataRecordModel.findByIdAndUpdate(id, updateDataRecordDto, {

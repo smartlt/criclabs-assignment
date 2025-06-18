@@ -46,9 +46,8 @@ export class DataRecordsController {
   update(
     @Param('id') id: string,
     @Body() updateDataRecordDto: UpdateDataRecordDto,
-    @Request() req: Request & { user: UserDocument },
   ) {
-    return this.dataRecordsService.update(id, updateDataRecordDto, req.user);
+    return this.dataRecordsService.update(id, updateDataRecordDto);
   }
 
   @Delete(':id')
