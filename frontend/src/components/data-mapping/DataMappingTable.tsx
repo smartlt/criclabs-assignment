@@ -11,9 +11,10 @@ import {
   SORT_DEFAULTS,
   PAGINATION_DEFAULTS,
   TABLE_HEIGHT_CLASS,
-  ERROR_MESSAGES,
 } from "@/constants/data-mapping";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import EditDataForm from "./EditDataForm";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 interface DataMappingTableProps {
   filters?: FilterState;
@@ -36,6 +37,12 @@ export default function DataMappingTable({
   const [sortDirection, setSortDirection] = useState<SortDirection>(
     SORT_DEFAULTS.DIRECTION
   );
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
+  const [editingDataMapping, setEditingDataMapping] =
+    useState<DataMapping | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Keep track of current query parameters
   const currentQueryParams = useRef<QueryParams>({});
@@ -129,16 +136,36 @@ export default function DataMappingTable({
     </th>
   );
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm(ERROR_MESSAGES.DELETE_CONFIRM)) {
-      try {
-        await deleteDataMapping(id);
-        // Success feedback is handled by the hook
-      } catch {
-        // Error feedback is handled by the hook with toast notifications
-        // Additional user feedback could be added here if needed
-      }
+  const handleEdit = (dataMapping: DataMapping) => {
+    setEditingDataMapping(dataMapping);
+    setIsEditFormOpen(true);
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setDeletingItemId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingItemId) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteDataMapping(deletingItemId);
+      // Success feedback is handled by the hook
+    } catch {
+      // Error feedback is handled by the hook with toast notifications
+      // Additional user feedback could be added here if needed
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+      setDeletingItemId(null);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteDialogOpen(false);
+    setDeletingItemId(null);
   };
 
   if (isLoading) {
@@ -217,9 +244,7 @@ export default function DataMappingTable({
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
                       className="text-green-600 hover:text-green-900 mr-4"
-                      onClick={() => {
-                        /* Handle edit */
-                      }}
+                      onClick={() => handleEdit(item)}
                     >
                       <svg
                         className="w-5 h-5"
@@ -238,7 +263,7 @@ export default function DataMappingTable({
                     </button>
                     <button
                       className="text-red-600 hover:text-red-900"
-                      onClick={() => handleDelete(item._id)}
+                      onClick={() => handleDeleteClick(item._id)}
                     >
                       <svg
                         className="w-5 h-5"
@@ -307,6 +332,34 @@ export default function DataMappingTable({
           </tbody>
         </table>
       </div>
+
+      {/* Edit Data Form */}
+      <EditDataForm
+        isOpen={isEditFormOpen}
+        onClose={() => {
+          setIsEditFormOpen(false);
+          setEditingDataMapping(null);
+        }}
+        onSuccess={() => {
+          refreshTable();
+          setIsEditFormOpen(false);
+          setEditingDataMapping(null);
+        }}
+        dataMapping={editingDataMapping}
+      />
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        title="Delete Data Mapping"
+        message="Are you sure you want to delete this data mapping? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmVariant="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }
